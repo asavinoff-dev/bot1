@@ -8,8 +8,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from telebot import types
 
 # ===== ТОКЕНЫ (вставлены напрямую для теста) =====
-TELEGRAM_TOKEN = "8362080141:AAHLVRsdS6ub6Bm6mTq-wuqT_8CEEB3GBTY"
-OPENROUTER_API_KEY = "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"
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 MODEL = "google/gemini-2.5-flash"
