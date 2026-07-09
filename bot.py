@@ -12,7 +12,7 @@ TELEGRAM_TOKEN = "8362080141:AAHLVRsdS6ub6Bm6mTq-wuqT_8CEEB3GBTY"
 OPENROUTER_API_KEY = "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"
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
-MODEL = "google/gemini-2.5-flash-preview-09-2025"
+MODEL = "meta-llama/llama-3.2-90b-vision-instruct"
 
 # ===== ВЕБ-СЕРВЕР ДЛЯ RENDER =====
 class HealthHandler(BaseHTTPRequestHandler):
