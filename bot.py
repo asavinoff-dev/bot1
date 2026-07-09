@@ -3,20 +3,35 @@ import requests
 import base64
 import json
 import os
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telebot import types
 
-# ===== ТОКЕНЫ БЕРУТСЯ ИЗ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ =====
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-
-if not TELEGRAM_TOKEN or not OPENROUTER_API_KEY:
-    raise Exception("Не заданы переменные окружения: TELEGRAM_TOKEN и OPENROUTER_API_KEY")
+# ===== ТОКЕНЫ (вставлены напрямую для теста) =====
+TELEGRAM_TOKEN = "8362080141:AAHLVRsdS6ub6Bm6mTq-wuqT_8CEEB3GBTY"
+OPENROUTER_API_KEY = "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"
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
-
-# ===== НАСТРОЙКА МОДЕЛИ =====
 MODEL = "google/gemini-2.5-flash-preview-09-2025"
 
+# ===== ВЕБ-СЕРВЕР ДЛЯ RENDER =====
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server.serve_forever()
+
+# Запускаем веб-сервер в отдельном потоке
+thread = threading.Thread(target=run_web_server)
+thread.daemon = True
+thread.start()
+
+# ===== ФУНКЦИЯ АНАЛИЗА ГРАФИКА =====
 def analyze_chart(image_bytes):
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
     prompt = """
@@ -62,6 +77,7 @@ def analyze_chart(image_bytes):
     except Exception as e:
         return f"⚠️ Ошибка при анализе: {str(e)}"
 
+# ===== ОБРАБОТЧИКИ TELEGRAM =====
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
     file_info = bot.get_file(message.photo[-1].file_id)
@@ -88,5 +104,5 @@ def send_welcome(message):
     bot.reply_to(message, welcome_text, parse_mode="Markdown")
 
 if __name__ == "__main__":
-    print("Бот-аналитик с OpenRouter запущен...")
+    print("Бот-аналитик с OpenRouter запущен и слушает порт")
     bot.infinity_polling()
